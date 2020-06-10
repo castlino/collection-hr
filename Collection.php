@@ -1,6 +1,6 @@
 <?php
 
-class Collection{
+class Collection {
   private $items = [];
   
   private $returnPath = "";
@@ -20,9 +20,9 @@ class Collection{
   public function getPath($from, $to, $latency, $path="", $idxCont = []){
     static $stopFlag = false;
     
+    // Initialize variables.
     $this->returnPath = $path;
-    if($path==""){
-      echo "initializing...";
+    if ( $path=="" ) {
       $this->returnPath = $from;
       $this->iOrigin = $from;
       $this->rTotal = 0;
@@ -31,70 +31,54 @@ class Collection{
       $stopFlag = false;
     }
     
-    
-    if( !$stopFlag ){
+    if ( !$stopFlag ) {
       $this->rIndexes = $idxCont;
       $indexes = $this->getFromItems($from);
-      $tmpPath = $path;
       foreach($indexes as $ctrNdx => $ndx){
-          if( !$stopFlag ){
-            echo "\nbefore setting from:";
-            echo "\nfrom: ". $from;
-            echo "\n";
-            echo json_encode($this->items[$ndx['key']]);
-            echo "\n";
-            echo json_encode(end($indexes));
+          if( !$stopFlag ) {
+            
+            // Set the next item to search
             if($ndx['link'] == 'from' ){
               $from = $this->items[$ndx['key']]['to'];
             }else{
               $from = $this->items[$ndx['key']]['from'];
             }
-            $this->rTotal += $this->items[$ndx['key']]['latency'];
+            
+            // Save item
             array_push($this->rIndexes, $ndx['key']);
             
-            echo "\n..". json_encode($this->rIndexes);
-            echo "\n". $this->returnPath . "(".$from.", ". $to."), latency: " . $this->rTotal. "\n";
-            echo "\nCtrNdx: ".$ctrNdx;
-            echo "\nfrom: ".$from;
-            echo "\nto: ".$to;
+            // Assemble path and get total latency.
+            $this->returnPath = $this->iOrigin;
+            $currDev = $this->iOrigin;
+            $this->rTotal = 0;
+            foreach( $this->rIndexes as $rIdx ) {
+              if ( $currDev!=$this->items[$rIdx]['to'] ) {
+                $this->returnPath .= " => " . $this->items[$rIdx]['to'];
+                $currDev = $this->items[$rIdx]['to'];
+              } else {
+                $this->returnPath .= " => " . $this->items[$rIdx]['from'];
+                $currDev = $this->items[$rIdx]['from'];
+              }
+              $this->rTotal += $this->items[$rIdx]['latency'];
+            }
           
-            if($from == $to){
-              echo "\nexiting...";
-              if($this->rTotal <= $this->iLatency){
+            // Check if conditions met.
+            if ( $from == $to ) {
+              if( $this->rTotal <= $this->iLatency ) {
                 $stopFlag = true;
-                echo "\n stopping... ".$this->rTotal;
                 return $this->returnPath;
-              }else{
+              } else {
                 $this->rIndexes = $idxCont;
                 array_pop($this->rIndexes);
                 $this->returnPath = $path;
                 $this->rTotal = 0;
               }
               break;
-            }else{
-                
-                echo "\nassembling path..";
-                $this->returnPath = $this->iOrigin;
-                $currDev = $this->iOrigin;
-                $this->rTotal = 0;
-                foreach($this->rIndexes as $rIdx){
-                  if($currDev!=$this->items[$rIdx]['to']){
-                    $this->returnPath .= " => " . $this->items[$rIdx]['to'];
-                    $currDev = $this->items[$rIdx]['to'];
-                  }else{
-                    $this->returnPath .= " => " . $this->items[$rIdx]['from'];
-                    $currDev = $this->items[$rIdx]['from'];
-                  }
-                  echo "\n --latency: ".$this->items[$rIdx]['latency'];
-                  $this->rTotal += $this->items[$rIdx]['latency'];
-                }
-                echo "\n". $this->returnPath . "(".$from.", ". $to."), latency: " . $this->rTotal. "\n";
-                
+            } else {
                 $this->getPath($from, $to, $latency, $this->returnPath, $this->rIndexes);
             }
           }
       }
-      echo "\nnext loop in recursion...";
       if( !$stopFlag ){
         $this->rIndexes = $idxCont;
         array_pop($this->rIndexes);
@@ -105,16 +89,17 @@ class Collection{
     
     
     if( !$stopFlag ){
-      return "Path not found";
+        return "Path not found";
+    }else{
+        return $this->returnPath . " => " . $this->rTotal;
     }
-    echo (json_encode($this->rIndexes));
-    return $this->returnPath . " => " . $to . " => " . $this->rTotal;
   }
   
   private function getFromItems($from){
     $keys = [];
     foreach($this->items as $key=>$item){
       if( ( $item['to'] == $from || $item['from'] == $from ) && !in_array($key, $this->rIndexes) ){
+        // Check if item found is from 'to' or 'from' key.
         if($item['to'] == $from ){
           array_push($keys, ['key'=>$key, 'link'=>'to']);
         }else{
@@ -122,10 +107,6 @@ class Collection{
         }
       }
     }
-    echo "\n@ START getFromItems...\n";
-    echo ">".json_encode($this->rIndexes)."<";
-    echo ">".json_encode($keys)."<";
-    echo "\n@ END getFromItems...\n";
     return $keys;
   }
   

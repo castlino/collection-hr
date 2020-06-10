@@ -13,23 +13,9 @@ $itemsCollection = new Collection();
 if (($handle = fopen($csvFilePath, "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $itemsCollection->add(['from'=>$data[0], 'to'=>$data[1], 'latency'=>$data[2]]);
-        $num = count($data);
-        // for ($c=0; $c < $num; $c++) {
-        //     echo $data[$c] . "<br />\n";
-        // }
     }
     fclose($handle);
 }
-
-// echo "\ncount total: ". $itemsCollection->count();
-// echo "\n final path: ";
-// // $finalPath = $itemsCollection->getPath('A', 'F', 1120);
-// // $finalPath = $itemsCollection->getPath('A', 'F', 1090);
-// // $finalPath = $itemsCollection->getPath('A', 'D', 100);
-// // $finalPath = $itemsCollection->getPath('E', 'A', 400);
-// // $finalPath = $itemsCollection->getPath('E', 'A', 80);
-// echo $finalPath;
-// echo "\n";
 
 while(true){
   echo "Input: ";
@@ -40,8 +26,12 @@ while(true){
       exit;
   }else{
       $inputs = explode(' ', $line);
-      $from = strtoupper($inputs[0]);
-      $to = strtoupper($inputs[1]);
+      if( count($inputs) != 3){
+        echo "Output: Input error... Syntax: \"[from] [to] [latency]\", type \"QUIT\" to terminate script.\n";
+        continue;
+      }
+      $from = strtoupper(trim($inputs[0]));
+      $to = strtoupper(trim($inputs[1]));
       $latency = (int) $inputs[2];
       $finalPath = $itemsCollection->getPath($from, $to, $latency);
   }
