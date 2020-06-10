@@ -2,10 +2,14 @@
 require_once "Collection.php";
 
 echo "\n";
+if( empty($argv[1]) ){
+  echo "File not specified...\n";
+  exit;
+}
 
 $csvFilePath = $argv[1];
 if( !file_exists($csvFilePath) ){
-  echo "File does not exits...\n";
+  echo "File does not exists...\n";
   exit;
 }
 
