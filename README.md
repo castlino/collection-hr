@@ -1,4 +1,4 @@
-# collection-hr
+# collection-tr
 **Installation/Deployment:**<br />
 Clone this project.<br />
    ex: (clone to current folder)<br />
