@@ -1,4 +1,4 @@
-# subscribe-hr
+# collection-hr
 **Installation/Deployment:**<br />
 Clone this project.<br />
    ex: (clone to current folder)<br />
